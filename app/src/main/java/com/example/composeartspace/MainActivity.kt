@@ -88,7 +88,9 @@ fun ArtDescriptor(
     name: String, artist: String, year: Int, modifier: Modifier = Modifier
 ) {
     Column(
+        verticalArrangement = Arrangement.Center,
         modifier = modifier
+            .height(150.dp)
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .padding(
@@ -96,7 +98,7 @@ fun ArtDescriptor(
                 top = 20.dp,
                 bottom = 20.dp,
                 end = 64.dp,
-            )
+            ),
     ) {
         Text(
             text = name,
