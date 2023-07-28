@@ -3,6 +3,7 @@ package com.example.composeartspace
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,16 +22,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.composeartspace.ui.theme.ComposeArtSpaceTheme
 
 class MainActivity : ComponentActivity() {
@@ -60,15 +63,23 @@ fun DisplayControllerButton(
 }
 
 @Composable
-fun DisplayController(modifier: Modifier = Modifier) {
+fun DisplayController(
+    onPreviousClick: () -> Unit,
+    onNextClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier.fillMaxWidth()
     ) {
-        DisplayControllerButton(textId = R.string.previous_button_text,
-            onClick = {})
-        DisplayControllerButton(textId = R.string.next_button_text,
-            onClick = {})
+        DisplayControllerButton(
+            textId = R.string.previous_button_text,
+            onClick = onPreviousClick
+        )
+        DisplayControllerButton(
+            textId = R.string.next_button_text,
+            onClick = onNextClick
+        )
     }
 }
 
@@ -78,6 +89,7 @@ fun ArtDescriptor(
 ) {
     Column(
         modifier = modifier
+            .fillMaxWidth()
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .padding(
                 start = 16.dp,
@@ -105,7 +117,11 @@ fun ArtDescriptor(
 }
 
 @Composable
-fun ArtworkWall(modifier: Modifier = Modifier) {
+fun ArtworkWall(
+    @DrawableRes painterId: Int,
+    painterDescription: String,
+    modifier: Modifier = Modifier
+) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -113,16 +129,46 @@ fun ArtworkWall(modifier: Modifier = Modifier) {
         shadowElevation = 12.dp,
     ) {
         Image(
-            painter = painterResource(id = R.drawable.wallhaven_72rxqo),
-            contentDescription = null,
+            painter = painterResource(id = painterId),
+            contentDescription = painterDescription,
             contentScale = ContentScale.FillHeight,
             modifier = Modifier.padding(all = 32.dp),
         )
     }
 }
 
+data class GalleryImage(
+    val name: String,
+    val artist: String,
+    val year: Int,
+    @DrawableRes val painterId: Int
+)
+
 @Composable
 fun ComposeArtSpaceApp() {
+    val images = listOf(
+        GalleryImage(
+            name = "Samurai Fighting the Waves",
+            artist = "HUHSOO",
+            year = 2022,
+            painterId = R.drawable.wallhaven_72rxqo
+        ),
+        GalleryImage(
+            name = "A City at Sunset",
+            artist = "Yu jing",
+            year = 2022,
+            painterId = R.drawable.wallhaven_zyxvqy,
+        ),
+        GalleryImage(
+            name = "Still Life of Blue Rose and Other Flowers",
+            artist = "Surendra Rajawat",
+            year = 2022,
+            painterId = R.drawable.wallhaven_k7q9m7,
+        )
+    )
+    var index by remember { mutableStateOf(0) }
+
+    val imageOnDisplay = images[index]
     Column(
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -131,17 +177,23 @@ fun ComposeArtSpaceApp() {
             .padding(20.dp),
     ) {
         ArtworkWall(
+            painterId = imageOnDisplay.painterId,
+            painterDescription = imageOnDisplay.name,
             modifier = Modifier
                 .padding(bottom = 52.dp)
         )
         Column {
             ArtDescriptor(
-                name = "Still Life of Blue Rose and Other Flowers",
-                artist = "Owen Scott",
-                year = 2021,
+                name = imageOnDisplay.name,
+                artist = imageOnDisplay.artist,
+                year = imageOnDisplay.year,
             )
             Spacer(modifier = Modifier.size(8.dp))
             DisplayController(
+                onPreviousClick = {
+                    index = if (index == 0) images.size - 1 else index - 1
+                },
+                onNextClick = { index = (index + 1) % images.size },
                 modifier = Modifier.padding(
                     start = 12.dp,
                     end = 12.dp
@@ -163,7 +215,10 @@ fun ArtSpaceAppPreview() {
 @Composable
 fun ArtworkWallPreview() {
     ComposeArtSpaceTheme {
-        ArtworkWall()
+        ArtworkWall(
+            painterId = R.drawable.wallhaven_72rxqo,
+            painterDescription = "Still Life of Blue Rose and Other Flowers"
+        )
     }
 }
 
@@ -183,7 +238,10 @@ fun ArtDescriptorPreview() {
 @Composable
 fun DisplayControllerPreview() {
     ComposeArtSpaceTheme {
-        DisplayController()
+        DisplayController(
+            onPreviousClick = {},
+            onNextClick = {},
+        )
     }
 }
 
